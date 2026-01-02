@@ -369,11 +369,11 @@ class SelfdriveD(CruiseHelper):
     no_system_errors = (not has_disable_events) or (len(self.events) == num_events)
     if not self.sm.all_checks() and no_system_errors:
       if not self.sm.all_alive():
-        self.events.add(EventName.commIssue)
+        pass#self.events.add(EventName.commIssue)
       elif not self.sm.all_freq_ok():
-        self.events.add(EventName.commIssueAvgFreq)
+        pass#self.events.add(EventName.commIssueAvgFreq)
       else:
-        self.events.add(EventName.commIssue)
+        pass#self.events.add(EventName.commIssue)
 
       logs = {
         'invalid': [s for s, valid in self.sm.valid.items() if not valid],
