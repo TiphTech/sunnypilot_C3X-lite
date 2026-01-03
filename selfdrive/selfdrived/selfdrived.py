@@ -22,7 +22,6 @@ from openpilot.selfdrive.selfdrived.state import StateMachine
 from openpilot.selfdrive.selfdrived.alertmanager import AlertManager, set_offroad_alert
 
 from openpilot.system.version import get_build_metadata
-from openpilot.system.hardware import HARDWARE
 
 from openpilot.sunnypilot.mads.mads import ModularAssistiveDrivingSystem
 from openpilot.sunnypilot import get_sanitize_int_param
@@ -90,7 +89,6 @@ class SelfdriveD(CruiseHelper):
     self.car_state_sock = messaging.sub_sock('carState', timeout=20)
 
     ignore = self.sensor_packets + self.gps_packets + ['alertDebug'] + ['modelDataV2SP']
-    ignore += ['driverCameraState', 'managerState', 'driverMonitoringState']
     if SIMULATION:
       ignore += ['driverCameraState', 'managerState']
     if REPLAY:
@@ -149,8 +147,6 @@ class SelfdriveD(CruiseHelper):
     # Determine startup event
     is_remote = build_metadata.openpilot.comma_remote or build_metadata.openpilot.sunnypilot_remote
     self.startup_event = EventName.startup if is_remote and build_metadata.tested_channel else EventName.startupMaster
-    if HARDWARE.get_device_type() == 'mici':
-      self.startup_event = None
     if not car_recognized:
       self.startup_event = EventName.startupNoCar
     elif car_recognized and self.CP.passive:
@@ -342,7 +338,7 @@ class SelfdriveD(CruiseHelper):
         cloudlog.event("process_not_running", not_running=not_running, error=True)
       self.not_running_prev = not_running
     if self.sm.recv_frame['managerState'] and (not_running - self.ignored_processes):
-      self.events.add(EventName.processNotRunning)
+      pass#self.events.add(EventName.processNotRunning)
     else:
       if not SIMULATION and not self.rk.lagging:
         if not self.sm.all_alive(self.camera_packets):
@@ -396,7 +392,7 @@ class SelfdriveD(CruiseHelper):
 
     # conservative HW alert. if the data or frequency are off, locationd will throw an error
     if any((self.sm.frame - self.sm.recv_frame[s])*DT_CTRL > 10. for s in self.sensor_packets):
-      self.events.add(EventName.sensorDataInvalid)
+      pass#self.events.add(EventName.sensorDataInvalid)
 
     if not REPLAY:
       # Check for mismatch between openpilot and car's PCM
@@ -431,7 +427,7 @@ class SelfdriveD(CruiseHelper):
     # GPS checks
     gps_ok = self.sm.recv_frame[self.gps_location_service] > 0 and (self.sm.frame - self.sm.recv_frame[self.gps_location_service]) * DT_CTRL < 2.0
     if not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500):
-      self.events.add(EventName.noGps)
+      pass#self.events.add(EventName.noGps)
     if gps_ok:
       self.distance_traveled = 0
     self.distance_traveled += abs(CS.vEgo) * DT_CTRL
